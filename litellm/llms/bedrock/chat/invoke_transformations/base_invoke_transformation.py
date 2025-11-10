@@ -322,9 +322,11 @@ class AmazonInvokeConfig(BaseConfig, BaseAWSLLM):
                     encoding=encoding,
                 )
             elif provider == "ai21":
-                outputText = (
-                    completion_response.get("completions")[0].get("data").get("text")
-                )
+                completions = completion_response.get("completions")
+                if completions and len(completions) > 0:
+                    outputText = completions[0].get("data", {}).get("text")
+                else:
+                    outputText = None
             elif provider == "meta" or provider == "llama" or provider == "deepseek_r1":
                 outputText = completion_response["generation"]
             elif provider == "mistral":
@@ -332,7 +334,11 @@ class AmazonInvokeConfig(BaseConfig, BaseAWSLLM):
                     completion_response, model_response
                 )
             else:  # amazon titan
-                outputText = completion_response.get("results")[0].get("outputText")
+                results = completion_response.get("results")
+                if results and len(results) > 0:
+                    outputText = results[0].get("outputText")
+                else:
+                    outputText = None
         except Exception as e:
             raise BedrockError(
                 message="Error processing={}, Received error={}".format(

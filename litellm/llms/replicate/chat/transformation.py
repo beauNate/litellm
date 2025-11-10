@@ -180,7 +180,8 @@ class ReplicateConfig(BaseConfig):
             supports_sys_prompt = False
 
         if supports_sys_prompt:
-            for i in range(len(messages)):
+            # Iterate backwards to safely remove items while iterating
+            for i in range(len(messages) - 1, -1, -1):
                 if messages[i]["role"] == "system":
                     first_sys_message = messages.pop(i)
                     system_prompt = convert_content_list_to_str(first_sys_message)

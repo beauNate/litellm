@@ -462,7 +462,11 @@ class BedrockLLM(BaseAWSLLM):
                             json_schemas[tool["function"]["name"]] = tool[
                                 "function"
                             ].get("parameters", None)
-                    outputText = completion_response.get("content")[0].get("text", None)
+                    content_list = completion_response.get("content")
+                    if content_list and len(content_list) > 0:
+                        outputText = content_list[0].get("text", None)
+                    else:
+                        outputText = None
                     if outputText is not None and contains_tag(
                         "invoke", outputText
                     ):  # OUTPUT PARSE FUNCTION CALL
@@ -569,9 +573,11 @@ class BedrockLLM(BaseAWSLLM):
                         "stop_reason"
                     ]
             elif provider == "ai21":
-                outputText = (
-                    completion_response.get("completions")[0].get("data").get("text")
-                )
+                completions = completion_response.get("completions")
+                if completions and len(completions) > 0:
+                    outputText = completions[0].get("data", {}).get("text")
+                else:
+                    outputText = None
             elif provider == "meta" or provider == "llama":
                 outputText = completion_response["generation"]
             elif provider == "mistral":
@@ -580,7 +586,11 @@ class BedrockLLM(BaseAWSLLM):
                     "outputs"
                 ][0]["stop_reason"]
             else:  # amazon titan
-                outputText = completion_response.get("results")[0].get("outputText")
+                results = completion_response.get("results")
+                if results and len(results) > 0:
+                    outputText = results[0].get("outputText")
+                else:
+                    outputText = None
         except Exception as e:
             raise BedrockError(
                 message="Error processing={}, Received error={}".format(
@@ -1396,7 +1406,11 @@ class AWSEventStreamDecoder:
             text = chunk_data["outputText"]
         # ai21 mapping
         elif "ai21" in self.model:  # fake ai21 streaming
-            text = chunk_data.get("completions")[0].get("data").get("text")  # type: ignore
+            completions = chunk_data.get("completions")
+            if completions and len(completions) > 0:
+                text = completions[0].get("data", {}).get("text")  # type: ignore
+            else:
+                text = None
             is_finished = True
             finish_reason = "stop"
         ######## /bedrock/converse mappings ###############
