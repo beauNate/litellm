@@ -8,6 +8,7 @@ Router cooldown handlers
 
 import asyncio
 import math
+import threading
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 import litellm
@@ -305,14 +306,38 @@ def _set_cooldown_deployments(
         )
 
         # Trigger cooldown callback handler
-        asyncio.create_task(
-            router_cooldown_event_callback(
-                litellm_router_instance=litellm_router_instance,
-                deployment_id=deployment,
-                exception_status=exception_status,
-                cooldown_time=time_to_cooldown,
+        # This is a fire-and-forget operation, so we handle both sync and async contexts
+        try:
+            loop = asyncio.get_running_loop()
+            # If we're in an async context, schedule the task
+            loop.create_task(
+                router_cooldown_event_callback(
+                    litellm_router_instance=litellm_router_instance,
+                    deployment_id=deployment,
+                    exception_status=exception_status,
+                    cooldown_time=time_to_cooldown,
+                )
             )
-        )
+        except RuntimeError:
+            # No running event loop - run callback in a background thread
+            # This prevents blocking and avoids nested event loop issues
+            def run_callback():
+                try:
+                    asyncio.run(
+                        router_cooldown_event_callback(
+                            litellm_router_instance=litellm_router_instance,
+                            deployment_id=deployment,
+                            exception_status=exception_status,
+                            cooldown_time=time_to_cooldown,
+                        )
+                    )
+                except Exception as e:
+                    verbose_router_logger.debug(
+                        f"Error in cooldown callback: {str(e)}"
+                    )
+
+            thread = threading.Thread(target=run_callback, daemon=True)
+            thread.start()
         return True
     return False
 

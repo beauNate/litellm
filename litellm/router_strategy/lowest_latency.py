@@ -490,6 +490,7 @@ class LowestLatencyLoggingHandler(CustomLogger):
 
             # get average latency or average ttft (depending on streaming/non-streaming)
             total: float = 0.0
+            latency_list_length = 0
             if (
                 request_kwargs is not None
                 and request_kwargs.get("stream", None) is not None
@@ -499,11 +500,16 @@ class LowestLatencyLoggingHandler(CustomLogger):
                 for _call_latency in item_ttft_latency:
                     if isinstance(_call_latency, float):
                         total += _call_latency
+                        latency_list_length += 1
             else:
                 for _call_latency in item_latency:
                     if isinstance(_call_latency, float):
                         total += _call_latency
-            item_latency = total / len(item_latency)
+                        latency_list_length += 1
+            if latency_list_length > 0:
+                item_latency = total / latency_list_length
+            else:
+                item_latency = 0.0
 
             # -------------- #
             # Debugging Logic
