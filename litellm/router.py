@@ -1645,9 +1645,15 @@ class Router:
             final_responses: List[List[Any]] = [[] for _ in range(len(messages))]
             for response in responses:
                 if isinstance(response, tuple):
-                    final_responses[response[1]].append(response[0])
+                    idx = response[1]
+                    if len(final_responses) > 0 and 0 <= idx < len(final_responses):
+                        final_responses[idx].append(response[0])
+                    elif len(final_responses) > 0:
+                        # Fallback to first index if idx is out of bounds
+                        final_responses[0].append(response[0])
                 else:
-                    final_responses[0].append(response)
+                    if len(final_responses) > 0:
+                        final_responses[0].append(response)
             return final_responses
 
     async def abatch_completion_one_model_multiple_requests(
@@ -5281,7 +5287,7 @@ class Router:
         litellm_model = deployment.litellm_params.model
         is_prompt_management_model = False
 
-        if "/" in litellm_model:
+        if litellm_model is not None and "/" in litellm_model:
             split_litellm_model = litellm_model.split("/")[0]
             if split_litellm_model in litellm._known_custom_logger_compatible_callbacks:
                 is_prompt_management_model = True

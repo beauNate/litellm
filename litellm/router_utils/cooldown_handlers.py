@@ -208,9 +208,7 @@ def _should_cooldown_deployment(
         total_requests_this_minute = num_successes_this_minute + num_fails_this_minute
         percent_fails = 0.0
         if total_requests_this_minute > 0:
-            percent_fails = num_fails_this_minute / (
-                num_successes_this_minute + num_fails_this_minute
-            )
+            percent_fails = num_fails_this_minute / total_requests_this_minute
         verbose_router_logger.debug(
             "percent fails for deployment = %s, percent fails = %s, num successes = %s, num fails = %s",
             deployment,
