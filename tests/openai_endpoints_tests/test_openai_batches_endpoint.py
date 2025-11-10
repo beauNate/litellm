@@ -24,10 +24,11 @@ client = OpenAI(base_url=BASE_URL, api_key=API_KEY)
 async def test_batches_operations():
     _current_dir = os.path.dirname(os.path.abspath(__file__))
     input_file_path = os.path.join(_current_dir, "input.jsonl")
-    file_obj = client.files.create(
-        file=open(input_file_path, "rb"),
-        purpose="batch",
-    )
+    with open(input_file_path, "rb") as file:
+        file_obj = client.files.create(
+            file=file,
+            purpose="batch",
+        )
 
     batch = client.batches.create(
         input_file_id=file_obj.id,
@@ -69,11 +70,12 @@ async def test_batches_operations():
 
 
 def create_batch_oai_sdk(filepath: str, custom_llm_provider: str) -> str:
-    batch_input_file = client.files.create(
-        file=open(filepath, "rb"),
-        purpose="batch",
-        extra_headers={"custom-llm-provider": custom_llm_provider},
-    )
+    with open(filepath, "rb") as file:
+        batch_input_file = client.files.create(
+            file=file,
+            purpose="batch",
+            extra_headers={"custom-llm-provider": custom_llm_provider},
+        )
     batch_input_file_id = batch_input_file.id
 
     print("waiting for file to be processed......")
@@ -199,11 +201,12 @@ def test_vertex_batches_endpoint():
     file_name = "local_testing/vertex_batch_completions.jsonl"
     _current_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(_current_dir, file_name)
-    file_obj = oai_client.files.create(
-        file=open(file_path, "rb"),
-        purpose="batch",
-        extra_headers={"custom-llm-provider": "vertex_ai"},
-    )
+    with open(file_path, "rb") as file:
+        file_obj = oai_client.files.create(
+            file=file,
+            purpose="batch",
+            extra_headers={"custom-llm-provider": "vertex_ai"},
+        )
     print("Response from creating file=", file_obj)
 
     batch_input_file_id = file_obj.id

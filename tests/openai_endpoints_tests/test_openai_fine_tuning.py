@@ -17,11 +17,12 @@ async def test_openai_fine_tuning():
         _current_dir = os.path.dirname(os.path.abspath(__file__))
         file_path = os.path.join(_current_dir, file_name)
 
-        response = await client.files.create(
-            extra_headers={"custom-llm-provider": "openai"},
-            file=open(file_path, "rb"),
-            purpose="fine-tune",
-        )
+        with open(file_path, "rb") as file:
+            response = await client.files.create(
+                extra_headers={"custom-llm-provider": "openai"},
+                file=file,
+                purpose="fine-tune",
+            )
 
         print("response from files.create: {}".format(response))
 

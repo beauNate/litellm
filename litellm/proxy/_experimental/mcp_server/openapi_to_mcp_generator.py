@@ -138,11 +138,12 @@ async def tool_function({params_str}) -> str:
     url = base_url + path
     
     # Replace path parameters
+    # OpenAPI path parameters use {param} format, not {{param}}
     path_param_names = {path_params}
     for param_name in path_param_names:
         param_value = locals().get(param_name, "")
         if param_value:
-            url = url.replace("{{" + param_name + "}}", str(param_value))
+            url = url.replace("{" + param_name + "}", str(param_value))
     
     # Build query params
     query_param_names = {query_params}

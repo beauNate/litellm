@@ -18,11 +18,12 @@ async def test_bedrock_batches_api():
     E2E Test Creating a File and a Batch on Bedrock
     """
     # Upload file
-    batch_input_file = client.files.create(
-        file=open("tests/openai_endpoints_tests/bedrock_batch_completions.jsonl", "rb"),
-        purpose="batch",
-        extra_body={"target_model_names": BEDROCK_BATCH_MODEL}
-    )
+    with open("tests/openai_endpoints_tests/bedrock_batch_completions.jsonl", "rb") as file:
+        batch_input_file = client.files.create(
+            file=file,
+            purpose="batch",
+            extra_body={"target_model_names": BEDROCK_BATCH_MODEL}
+        )
     print(batch_input_file)
 
     # Create batch

@@ -5248,7 +5248,7 @@ def function_to_dict(input_function) -> dict:  # noqa: C901
                         # may represent a set of acceptable values
                         # translating as enum for function calling
                         try:
-                            param_enum = str(list(literal_eval(param_type)))
+                            param_enum = list(literal_eval(param_type))
                             param_type = "string"
                         except Exception:
                             pass
@@ -5261,8 +5261,9 @@ def function_to_dict(input_function) -> dict:  # noqa: C901
             "enum": param_enum,
         }
 
+        # Filter out None values, but keep enum as a list (not just strings)
         parameters[param_name] = dict(
-            [(k, v) for k, v in param_dict.items() if isinstance(v, str)]
+            [(k, v) for k, v in param_dict.items() if v is not None and (isinstance(v, str) or isinstance(v, list))]
         )
 
         # Check if the parameter has no default value (i.e., it's required)
