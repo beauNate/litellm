@@ -1345,7 +1345,7 @@ class VertexGeminiConfig(VertexAIBaseConfig, BaseConfig):
 
     @staticmethod
     def _process_response_token_details(
-        usage_metadata: dict,
+        usage_metadata: UsageMetadata,
         response_tokens_details: Optional[CompletionTokensDetailsWrapper] = None,
     ) -> Optional[CompletionTokensDetailsWrapper]:
         """Process response token details from Gemini Live API."""
@@ -1361,17 +1361,17 @@ class VertexGeminiConfig(VertexAIBaseConfig, BaseConfig):
 
     @staticmethod
     def _process_candidates_token_details(
-        usage_metadata: dict,
+        usage_metadata: UsageMetadata,
         response_tokens_details: Optional[CompletionTokensDetailsWrapper] = None,
     ) -> Optional[CompletionTokensDetailsWrapper]:
         """Process candidates token details for image generation models."""
-        if "candidatesTokensDetails" not in usage_metadata:
+        if "candidatesTokensDetails" not in usage_metadata:  # type: ignore[typeddict-item]
             return response_tokens_details
 
         if response_tokens_details is None:
             response_tokens_details = CompletionTokensDetailsWrapper()
 
-        for detail in usage_metadata["candidatesTokensDetails"]:
+        for detail in usage_metadata["candidatesTokensDetails"]:  # type: ignore[typeddict-item]
             modality = detail.get("modality")
             token_count = detail.get("tokenCount", 0)
             if modality == "TEXT":
@@ -1394,7 +1394,7 @@ class VertexGeminiConfig(VertexAIBaseConfig, BaseConfig):
 
     @staticmethod
     def _process_prompt_token_details(
-        usage_metadata: dict,
+        usage_metadata: UsageMetadata,
     ) -> Tuple[Optional[int], Optional[int], Optional[int]]:
         """Process prompt token details and return audio, text, and cached tokens."""
         audio_tokens: Optional[int] = None
